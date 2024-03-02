@@ -107,7 +107,7 @@ fn computer_turn(board: &mut[[char; BOARD_SIZE]; BOARD_SIZE]) {
 }
 
 fn check_for_game_over(board: &[[char; BOARD_SIZE]; BOARD_SIZE]) {
-    // Check rows
+    // Check rows for win condition
     for row in 0..BOARD_SIZE {
         if board[row][0] != ' ' {
             let mut game_won = true;
@@ -132,7 +132,7 @@ fn check_for_game_over(board: &[[char; BOARD_SIZE]; BOARD_SIZE]) {
         }
     }
 
-    // Checks cols
+    // Checks cols for win condition
     for col in 0..BOARD_SIZE {
         if board[0][col] != ' ' {
             let mut game_won = true;
@@ -157,7 +157,7 @@ fn check_for_game_over(board: &[[char; BOARD_SIZE]; BOARD_SIZE]) {
         }
     }
 
-    // Check top-left-to-bottom-right diagonal
+    // Check top-left-to-bottom-right diagonal for win condition
     if board[0][0] != ' ' {
         let mut game_won = true;
         for i in 1..BOARD_SIZE {
@@ -180,7 +180,7 @@ fn check_for_game_over(board: &[[char; BOARD_SIZE]; BOARD_SIZE]) {
         }
     }
     
-    // Check top-right-to-bottom-left diagonal
+    // Check top-right-to-bottom-left diagonal for win condition
     if board[0][BOARD_SIZE - 1] != ' ' {
         let mut game_won = true;
         for i in 1..BOARD_SIZE {
