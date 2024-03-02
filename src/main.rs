@@ -4,16 +4,15 @@ const BOARD_SIZE: usize = 3;
 
 fn main() {
     let mut board = [[' '; BOARD_SIZE]; BOARD_SIZE];
-    let mut game_over = false;
 
     println!("You are x. The computer is o. Your turn first!");
     println!("Enter 'forfeit' at any time to quit.");
 
-    while !game_over {
-        print_board(&board);
+    loop {
         player_turn(&mut board);
+        check_for_game_over(&board);
         computer_turn(&mut board);
-        game_over = check_for_game_over(&board);
+        check_for_game_over(&board);
     }
 }
 
@@ -21,17 +20,19 @@ fn print_board(board: &[[char; BOARD_SIZE]; BOARD_SIZE]) {
     println!("    1   2   3");
     println!("  +---+---+---+");
 
-    for i in 0..BOARD_SIZE {
-       print!("{} | ", i + 1);
+    for row in 0..BOARD_SIZE {
+       print!("{} | ", row + 1);
        
-       for j in 0..BOARD_SIZE {
-           print!("{} | ", board[i][j]);
+       for col in 0..BOARD_SIZE {
+           print!("{} | ", board[row][col]);
         }
         println!("\n  +---+---+---+");
     }
 }
 
 fn player_turn(board: &mut[[char; BOARD_SIZE]; BOARD_SIZE]) {
+    print_board(&board);
+    
     loop {
         // Prompt for move
         print!("Enter your move as row col: ");
@@ -42,7 +43,7 @@ fn player_turn(board: &mut[[char; BOARD_SIZE]; BOARD_SIZE]) {
         // Parse the input
         let buffer = buffer.trim().replace(char::is_whitespace, "").to_string();
         
-        if buffer == "forfeit" || buffer == "quit" {
+        if buffer == "forfeit" || buffer == "quit" || buffer == "q" {
             std::process::exit(0);
         }
 
@@ -79,7 +80,7 @@ fn player_turn(board: &mut[[char; BOARD_SIZE]; BOARD_SIZE]) {
        
         // Place cell
         board[row][col] = 'x';
-        break;
+        return;
     }
 }
 
@@ -95,16 +96,127 @@ fn computer_turn(board: &mut[[char; BOARD_SIZE]; BOARD_SIZE]) {
         return;
     }
 
-    for i in 0..BOARD_SIZE {
-        for j in 0..BOARD_SIZE {
-            if board[i][j] == ' ' {
-                board[i][j] = 'o';
+    for row in 0..BOARD_SIZE {
+        for col in 0..BOARD_SIZE {
+            if board[row][col] == ' ' {
+                board[row][col] = 'o';
                 return;
             }
         }
     }
 }
 
-fn check_for_game_over(board: &[[char; BOARD_SIZE]; BOARD_SIZE]) -> bool {
-    false
+fn check_for_game_over(board: &[[char; BOARD_SIZE]; BOARD_SIZE]) {
+    // Check rows
+    for row in 0..BOARD_SIZE {
+        if board[row][0] != ' ' {
+            let mut game_won = true;
+            for col in 1..BOARD_SIZE {
+                if board[row][col] != board[row][0] {
+                    game_won = false;
+                    break;
+                }
+            }
+
+            if game_won {
+                print_board(board);
+                
+                let winner = board[row][0];
+                match winner {
+                    'x' => println!("You won!"),
+                    'o' => println!("The computer wins. Better luck next time!"),
+                    _ => panic!(),
+                };
+                std::process::exit(0);
+            }
+        }
+    }
+
+    // Checks cols
+    for col in 0..BOARD_SIZE {
+        if board[0][col] != ' ' {
+            let mut game_won = true;
+            for row in 1..BOARD_SIZE {
+                if board[row][col] != board[0][col] {
+                    game_won = false;
+                    break;
+                }
+            }
+
+            if game_won {
+                print_board(board);
+                
+                let winner = board[0][col];
+                match winner {
+                    'x' => println!("You won!"),
+                    'o' => println!("The computer wins. Better luck next time!"),
+                    _ => panic!(),
+                };
+                std::process::exit(0);
+            }
+        }
+    }
+
+    // Check top-left-to-bottom-right diagonal
+    if board[0][0] != ' ' {
+        let mut game_won = true;
+        for i in 1..BOARD_SIZE {
+            if board[i][i] != board[0][0] {
+                game_won = false;
+                break;
+            }
+        }
+        
+        if game_won {
+            print_board(board);
+            
+            let winner = board[0][0];
+            match winner {
+                'x' => println!("You won!"),
+                'o' => println!("The computer wins. Better luck next time!"),
+                _ => panic!(),
+            };
+            std::process::exit(0);
+        }
+    }
+    
+    // Check top-right-to-bottom-left diagonal
+    if board[0][BOARD_SIZE - 1] != ' ' {
+        let mut game_won = true;
+        for i in 1..BOARD_SIZE {
+            if board[i][BOARD_SIZE - 1 - i] != board[0][BOARD_SIZE - 1] {
+                game_won = false;
+                break;
+            }
+        }
+        
+        if game_won {
+            print_board(board);
+            
+            let winner = board[0][BOARD_SIZE - 1];
+            match winner {
+                'x' => println!("You won!"),
+                'o' => println!("The computer wins. Better luck next time!"),
+                _ => panic!(),
+            };
+            std::process::exit(0);
+        }
+    }
+   
+    // Check for a draw
+    let mut draw = true;
+    for row in 0..BOARD_SIZE {
+        for col in 0..BOARD_SIZE {
+            if board[row][col] == ' ' {
+                draw = false;
+            }
+        }
+    }
+
+    if draw {
+        print_board(board);
+        println!("It's a draw!");
+        std::process::exit(0);
+    }
 }
+    
