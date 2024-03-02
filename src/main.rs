@@ -83,7 +83,27 @@ fn player_turn(board: &mut[[char; BOARD_SIZE]; BOARD_SIZE]) {
     }
 }
 
-fn computer_turn(board: & mut[[char; BOARD_SIZE]; BOARD_SIZE]) {}
+fn computer_turn(board: &mut[[char; BOARD_SIZE]; BOARD_SIZE]) {
+    // Start with middle cell
+    let mut middle_cell = BOARD_SIZE / 2;
+    if BOARD_SIZE % 2 == 0 {
+        middle_cell -= 1;
+    }
+
+    if board[middle_cell][middle_cell] == ' ' {
+        board[middle_cell][middle_cell] = 'o';
+        return;
+    }
+
+    for i in 0..BOARD_SIZE {
+        for j in 0..BOARD_SIZE {
+            if board[i][j] == ' ' {
+                board[i][j] = 'o';
+                return;
+            }
+        }
+    }
+}
 
 fn check_for_game_over(board: &[[char; BOARD_SIZE]; BOARD_SIZE]) -> bool {
     false
