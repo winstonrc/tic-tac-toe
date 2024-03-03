@@ -121,8 +121,7 @@ fn computer_turn(board: &mut Board) {
     // Find the first empty cell and make a move on it
     for row in 0..BOARD_SIZE {
         for col in 0..BOARD_SIZE {
-            let cell = board[row][col];
-            if cell == Cell::Empty {
+            if board[row][col] == Cell::Empty {
                 board[row][col] = player;
                 return;
             }
@@ -130,13 +129,12 @@ fn computer_turn(board: &mut Board) {
     }
 }
 
-fn get_empty_cells(board: &Board) -> Vec<Cell> {
-    let mut empty_cells: Vec<Cell> = Vec::new();
+fn get_empty_cells(board: &Board) -> Vec<(usize, usize)> {
+    let mut empty_cells: Vec<(usize, usize)> = Vec::new();
     for row in 0..BOARD_SIZE {
         for col in 0..BOARD_SIZE {
-            let cell = board[row][col];
-            if cell == Cell::Empty {
-                empty_cells.push(cell);
+            if board[row][col] == Cell::Empty {
+                empty_cells.push((row, col));
             }
         }
     }
@@ -224,7 +222,7 @@ fn end_game(board: &Board, winner: Option<Cell>) {
 
     match winner {
         Some(Cell::Empty) => println!("It's a draw. Try again!"),
-        Some(Cell::X) => println!("You won!"),
+        Some(Cell::X) => println!("You win!"),
         Some(Cell::O) => println!("The computer wins. Better luck next time!"),
         _ => panic!(),
     };
