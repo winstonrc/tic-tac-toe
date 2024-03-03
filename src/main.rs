@@ -1,14 +1,34 @@
 use std::io::{self, Write};
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum Cell {
+    Empty,
+    X,
+    O
+}
+
+impl std::fmt::Display for Cell {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Cell::Empty => write!(f, " "),
+            Cell::X => write!(f, "X"),
+            Cell::O => write!(f, "O"),
+        }
+    }
+}
+
 const BOARD_SIZE: usize = 3;
 
+type Board = [[Cell; BOARD_SIZE]; BOARD_SIZE];
+
 fn main() {
-    let mut board = [[' '; BOARD_SIZE]; BOARD_SIZE];
+    let mut board: Board = [[Cell::Empty; BOARD_SIZE]; BOARD_SIZE];
 
     println!("You are x. The computer is o. Your turn first!");
     println!("Enter 'forfeit' at any time to quit.");
 
     loop {
+        print_board(&board);
         player_turn(&mut board);
         check_for_game_over(&board);
         computer_turn(&mut board);
@@ -16,23 +36,24 @@ fn main() {
     }
 }
 
-fn print_board(board: &[[char; BOARD_SIZE]; BOARD_SIZE]) {
+fn print_board(board: &Board) {
     println!("    1   2   3");
     println!("  +---+---+---+");
 
     for row in 0..BOARD_SIZE {
-       print!("{} | ", row + 1);
+        print!("{} | ", row + 1);
        
-       for col in 0..BOARD_SIZE {
-           print!("{} | ", board[row][col]);
+        for col in 0..BOARD_SIZE {
+            let cell = board[row][col];
+            print!("{} | ", cell);
         }
         println!("\n  +---+---+---+");
     }
 }
 
-fn player_turn(board: &mut[[char; BOARD_SIZE]; BOARD_SIZE]) {
-    print_board(&board);
-    
+fn player_turn(board: &mut Board) {
+    let player = Cell::X;
+
     loop {
         // Prompt for move
         print!("Enter your move as row col: ");
@@ -72,151 +93,141 @@ fn player_turn(board: &mut[[char; BOARD_SIZE]; BOARD_SIZE]) {
             }
         };
         
-        // Check if cell is empty
-        if board[row][col] != ' ' {
+        if board[row][col] != Cell::Empty {
             println!("Move is not valid. Place in a different cell.");
             continue;
         }
        
-        // Place cell
-        board[row][col] = 'x';
-        return;
+        board[row][col] = player;
+        break;
     }
 }
 
-fn computer_turn(board: &mut[[char; BOARD_SIZE]; BOARD_SIZE]) {
-    // Start with middle cell
+fn computer_turn(board: &mut Board) {
+    let player = Cell::O;
+   
+    // Start from the middle cell
     let mut middle_cell = BOARD_SIZE / 2;
     if BOARD_SIZE % 2 == 0 {
         middle_cell -= 1;
     }
 
-    if board[middle_cell][middle_cell] == ' ' {
-        board[middle_cell][middle_cell] = 'o';
+    // Try to place first move on the middle cell
+    if board[middle_cell][middle_cell] == Cell::Empty {
+        board[middle_cell][middle_cell] = player;
         return;
     }
 
+    // Find the first empty cell and make a move on it
     for row in 0..BOARD_SIZE {
         for col in 0..BOARD_SIZE {
-            if board[row][col] == ' ' {
-                board[row][col] = 'o';
+            let cell = board[row][col];
+            if cell == Cell::Empty {
+                board[row][col] = player;
                 return;
             }
         }
     }
 }
 
-fn check_for_game_over(board: &[[char; BOARD_SIZE]; BOARD_SIZE]) {
+fn get_empty_cells(board: &Board) -> Vec<Cell> {
+    let mut empty_cells: Vec<Cell> = Vec::new();
+    for row in 0..BOARD_SIZE {
+        for col in 0..BOARD_SIZE {
+            let cell = board[row][col];
+            if cell == Cell::Empty {
+                empty_cells.push(cell);
+            }
+        }
+    }
+
+    empty_cells
+}
+
+fn check_for_game_over(board: &Board) {
     // Check rows for win condition
     for row in 0..BOARD_SIZE {
-        if board[row][0] != ' ' {
+        let first_cell = board[row][0];
+        if first_cell != Cell::Empty {
             let mut game_won = true;
             for col in 1..BOARD_SIZE {
-                if board[row][col] != board[row][0] {
+                if board[row][col] != first_cell {
                     game_won = false;
                     break;
                 }
             }
 
             if game_won {
-                print_board(board);
-                
-                let winner = board[row][0];
-                match winner {
-                    'x' => println!("You won!"),
-                    'o' => println!("The computer wins. Better luck next time!"),
-                    _ => panic!(),
-                };
-                std::process::exit(0);
+                end_game(&board, Some(first_cell));
             }
         }
     }
 
     // Checks cols for win condition
     for col in 0..BOARD_SIZE {
-        if board[0][col] != ' ' {
+        let first_cell = board[0][col];
+        if first_cell != Cell::Empty {
             let mut game_won = true;
             for row in 1..BOARD_SIZE {
-                if board[row][col] != board[0][col] {
+                if board[row][col] != first_cell {
                     game_won = false;
                     break;
                 }
             }
 
             if game_won {
-                print_board(board);
-                
-                let winner = board[0][col];
-                match winner {
-                    'x' => println!("You won!"),
-                    'o' => println!("The computer wins. Better luck next time!"),
-                    _ => panic!(),
-                };
-                std::process::exit(0);
+                end_game(&board, Some(first_cell));
             }
         }
     }
 
     // Check top-left-to-bottom-right diagonal for win condition
-    if board[0][0] != ' ' {
+    let first_cell = board[0][0];
+    if first_cell != Cell::Empty {
         let mut game_won = true;
         for i in 1..BOARD_SIZE {
-            if board[i][i] != board[0][0] {
+            if board[i][i] != first_cell {
                 game_won = false;
                 break;
             }
         }
         
         if game_won {
-            print_board(board);
-            
-            let winner = board[0][0];
-            match winner {
-                'x' => println!("You won!"),
-                'o' => println!("The computer wins. Better luck next time!"),
-                _ => panic!(),
-            };
-            std::process::exit(0);
+            end_game(&board, Some(first_cell));
         }
     }
     
     // Check top-right-to-bottom-left diagonal for win condition
-    if board[0][BOARD_SIZE - 1] != ' ' {
+    let first_cell = board[0][BOARD_SIZE - 1];
+    if first_cell != Cell::Empty {
         let mut game_won = true;
         for i in 1..BOARD_SIZE {
-            if board[i][BOARD_SIZE - 1 - i] != board[0][BOARD_SIZE - 1] {
+            if board[i][BOARD_SIZE - 1 - i] != first_cell {
                 game_won = false;
                 break;
             }
         }
         
         if game_won {
-            print_board(board);
-            
-            let winner = board[0][BOARD_SIZE - 1];
-            match winner {
-                'x' => println!("You won!"),
-                'o' => println!("The computer wins. Better luck next time!"),
-                _ => panic!(),
-            };
-            std::process::exit(0);
+            end_game(&board, Some(first_cell));
         }
     }
    
-    // Check for a draw
-    let mut draw = true;
-    for row in 0..BOARD_SIZE {
-        for col in 0..BOARD_SIZE {
-            if board[row][col] == ' ' {
-                draw = false;
-            }
-        }
-    }
-
-    if draw {
-        print_board(board);
-        println!("It's a draw!");
-        std::process::exit(0);
+    // Check for a draw by checking if visited has any remaining false values
+    if get_empty_cells(board).len() == 0 {
+        end_game(&board, Some(Cell::Empty));
     }
 }
-    
+
+fn end_game(board: &Board, winner: Option<Cell>) {
+    print_board(board);
+
+    match winner {
+        Some(Cell::Empty) => println!("It's a draw. Try again!"),
+        Some(Cell::X) => println!("You won!"),
+        Some(Cell::O) => println!("The computer wins. Better luck next time!"),
+        _ => panic!(),
+    };
+    std::process::exit(0);
+}
+
