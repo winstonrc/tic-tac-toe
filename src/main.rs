@@ -106,27 +106,64 @@ fn player_turn(board: &mut Board) {
 fn computer_turn(board: &mut Board) {
     let player = Cell::O;
    
-    // Start from the middle cell
-    let mut middle_cell = BOARD_SIZE / 2;
-    if BOARD_SIZE % 2 == 0 {
-        middle_cell -= 1;
-    }
+    let (row, col) = select_best_move(&board, &player).unwrap_or_else(|| panic!("No valid move found!"));
+    board[row][col] = player;
+}
 
-    // Try to place first move on the middle cell
-    if board[middle_cell][middle_cell] == Cell::Empty {
-        board[middle_cell][middle_cell] = player;
-        return;
-    }
+fn select_best_move(board: &Board, player: &Cell) -> Option<(usize, usize)> {
+    let mut predictive_board = board.clone();
+    let mut max_value = -100;
+    let mut best_move: Option<(usize, usize)> = None;
 
-    // Find the first empty cell and make a move on it
     for row in 0..BOARD_SIZE {
         for col in 0..BOARD_SIZE {
-            if board[row][col] == Cell::Empty {
-                board[row][col] = player;
-                return;
+            if predictive_board[row][col] == Cell::Empty {
+                predictive_board[row][col] = *player;
+                let move_value = check_move_strength(&mut predictive_board, &player);
+                predictive_board[row][col] = Cell::Empty;
+                
+                if move_value > max_value {
+                    max_value = move_value;
+                    best_move = Some((row, col));
+                }
             }
         }
     }
+
+    best_move
+}
+
+fn check_move_strength(board: &mut Board, player: &Cell) -> i32 {
+    let opponent: Cell = match *player {
+        Cell::X => Cell::O,
+        Cell::O => Cell::X,
+        Cell::Empty => panic!(),
+    };
+    
+    // Check if opponent wins
+    let winner = check_for_win(&board);
+    if winner.is_some() {
+        if winner.unwrap() == opponent {
+            return -128;
+        }
+    }
+
+    let mut max_value = -200;
+    for row in 0..BOARD_SIZE {
+        for col in 0..BOARD_SIZE {
+            if board[row][col] == Cell::Empty {
+                board[row][col] = *player;
+                let move_value = -check_move_strength(board, &opponent) / 2;
+                board[row][col] = Cell::Empty;
+
+                if move_value > max_value {
+                    max_value = move_value;
+                }
+            }
+        }
+    }
+
+    max_value
 }
 
 fn get_empty_cells(board: &Board) -> Vec<(usize, usize)> {
@@ -143,6 +180,18 @@ fn get_empty_cells(board: &Board) -> Vec<(usize, usize)> {
 }
 
 fn check_for_game_over(board: &Board) {
+    let winner = check_for_win(&board);
+    if winner.is_some() {
+        end_game(&board, winner.unwrap());
+    }
+
+    // Check for a draw by checking if visited has any remaining false values
+    if get_empty_cells(&board).len() == 0 {
+        end_game(&board, Cell::Empty);
+    }
+}
+
+fn check_for_win(board: &Board) -> Option<Cell> {
     // Check rows for win condition
     for row in 0..BOARD_SIZE {
         let first_cell = board[row][0];
@@ -156,7 +205,7 @@ fn check_for_game_over(board: &Board) {
             }
 
             if game_won {
-                end_game(&board, Some(first_cell));
+                return Some(first_cell);
             }
         }
     }
@@ -174,7 +223,7 @@ fn check_for_game_over(board: &Board) {
             }
 
             if game_won {
-                end_game(&board, Some(first_cell));
+                return Some(first_cell);
             }
         }
     }
@@ -191,7 +240,7 @@ fn check_for_game_over(board: &Board) {
         }
         
         if game_won {
-            end_game(&board, Some(first_cell));
+            return Some(first_cell);
         }
     }
     
@@ -207,24 +256,20 @@ fn check_for_game_over(board: &Board) {
         }
         
         if game_won {
-            end_game(&board, Some(first_cell));
+            return Some(first_cell);
         }
     }
-   
-    // Check for a draw by checking if visited has any remaining false values
-    if get_empty_cells(board).len() == 0 {
-        end_game(&board, Some(Cell::Empty));
-    }
+
+    None
 }
 
-fn end_game(board: &Board, winner: Option<Cell>) {
+fn end_game(board: &Board, winner: Cell) {
     print_board(board);
 
     match winner {
-        Some(Cell::Empty) => println!("It's a draw. Try again!"),
-        Some(Cell::X) => println!("You win!"),
-        Some(Cell::O) => println!("The computer wins. Better luck next time!"),
-        _ => panic!(),
+        Cell::Empty => println!("It's a draw. Try again!"),
+        Cell::X => println!("You win!"),
+        Cell::O => println!("The computer wins. Better luck next time!"),
     };
     std::process::exit(0);
 }
