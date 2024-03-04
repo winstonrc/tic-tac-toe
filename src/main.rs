@@ -108,8 +108,20 @@ fn player_turn(board: &mut Board) {
 fn computer_turn(board: &mut Board) {
     let player = Cell::O;
 
+    // Start from the middle cell
+    let mut middle_cell = BOARD_SIZE / 2;
+    if BOARD_SIZE % 2 == 0 {
+        middle_cell -= 1;
+    }
+
+    // Try to place first move on the middle cell
+    if board[middle_cell][middle_cell] == Cell::Empty {
+        board[middle_cell][middle_cell] = player;
+        return;
+    }
+
     let (row, col) =
-        select_best_move(&board, &player).unwrap_or_else(|| panic!("No valid move found!"));
+        select_best_move(board, &player).unwrap_or_else(|| panic!("No valid move found!"));
 
     board[row][col] = player;
 }
@@ -156,9 +168,11 @@ fn check_move_strength(board: &mut Board, player: &Cell) -> i32 {
     for row in 0..BOARD_SIZE {
         for col in 0..BOARD_SIZE {
             if board[row][col] == Cell::Empty {
-                board[row][col] = *player;
+                board[row][col] = opponent;
                 let move_value = -check_move_strength(board, &opponent) / 2;
                 board[row][col] = Cell::Empty;
+
+                println!("{}, {}: {}", row, col, move_value);
 
                 if move_value > max_value {
                     max_value = move_value;
