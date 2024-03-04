@@ -108,18 +108,19 @@ fn player_turn(board: &mut Board) {
 fn computer_turn(board: &mut Board) {
     let player = Cell::O;
 
-    // Start from the middle cell
+    // Try to place on the middle cell if it's available
     let mut middle_cell = BOARD_SIZE / 2;
     if BOARD_SIZE % 2 == 0 {
         middle_cell -= 1;
     }
 
-    // Try to place first move on the middle cell
     if board[middle_cell][middle_cell] == Cell::Empty {
         board[middle_cell][middle_cell] = player;
         return;
     }
 
+    // Otherwise look for best move using the negamax algorithm
+    // https://erwnerve.tripod.com/prog/recursion/tictctoe.htm
     let (row, col) =
         select_best_move(board, &player).unwrap_or_else(|| panic!("No valid move found!"));
 
