@@ -173,8 +173,6 @@ fn check_move_strength(board: &mut Board, player: &Cell) -> i32 {
                 let move_value = -check_move_strength(board, &opponent) / 2;
                 board[row][col] = Cell::Empty;
 
-                println!("{}, {}: {}", row, col, move_value);
-
                 if move_value > max_value {
                     max_value = move_value;
                 }
