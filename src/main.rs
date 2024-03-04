@@ -4,7 +4,7 @@ use std::io::{self, Write};
 enum Cell {
     Empty,
     X,
-    O
+    O,
 }
 
 impl std::fmt::Display for Cell {
@@ -42,7 +42,7 @@ fn print_board(board: &Board) {
 
     for row in 0..BOARD_SIZE {
         print!("{} | ", row + 1);
-       
+
         for col in 0..BOARD_SIZE {
             let cell = board[row][col];
             print!("{} | ", cell);
@@ -59,11 +59,13 @@ fn player_turn(board: &mut Board) {
         print!("Enter your move as row col: ");
         io::stdout().flush().expect("Failed to flush stdout.");
         let mut buffer = String::new();
-        io::stdin().read_line(&mut buffer).expect("Failed to read input.");
-        
+        io::stdin()
+            .read_line(&mut buffer)
+            .expect("Failed to read input.");
+
         // Parse the input
         let buffer = buffer.trim().replace(char::is_whitespace, "").to_string();
-        
+
         if buffer == "forfeit" || buffer == "quit" || buffer == "q" {
             std::process::exit(0);
         }
@@ -92,12 +94,12 @@ fn player_turn(board: &mut Board) {
                 continue;
             }
         };
-        
+
         if board[row][col] != Cell::Empty {
             println!("Move is not valid. Place in a different cell.");
             continue;
         }
-       
+
         board[row][col] = player;
         break;
     }
@@ -105,8 +107,10 @@ fn player_turn(board: &mut Board) {
 
 fn computer_turn(board: &mut Board) {
     let player = Cell::O;
-   
-    let (row, col) = select_best_move(&board, &player).unwrap_or_else(|| panic!("No valid move found!"));
+
+    let (row, col) =
+        select_best_move(&board, &player).unwrap_or_else(|| panic!("No valid move found!"));
+
     board[row][col] = player;
 }
 
@@ -121,7 +125,7 @@ fn select_best_move(board: &Board, player: &Cell) -> Option<(usize, usize)> {
                 predictive_board[row][col] = *player;
                 let move_value = check_move_strength(&mut predictive_board, &player);
                 predictive_board[row][col] = Cell::Empty;
-                
+
                 if move_value > max_value {
                     max_value = move_value;
                     best_move = Some((row, col));
@@ -139,7 +143,7 @@ fn check_move_strength(board: &mut Board, player: &Cell) -> i32 {
         Cell::O => Cell::X,
         Cell::Empty => panic!(),
     };
-    
+
     // Check if opponent wins
     let winner = check_for_win(&board);
     if winner.is_some() {
@@ -238,12 +242,12 @@ fn check_for_win(board: &Board) -> Option<Cell> {
                 break;
             }
         }
-        
+
         if game_won {
             return Some(first_cell);
         }
     }
-    
+
     // Check top-right-to-bottom-left diagonal for win condition
     let first_cell = board[0][BOARD_SIZE - 1];
     if first_cell != Cell::Empty {
@@ -254,7 +258,7 @@ fn check_for_win(board: &Board) -> Option<Cell> {
                 break;
             }
         }
-        
+
         if game_won {
             return Some(first_cell);
         }
@@ -273,4 +277,3 @@ fn end_game(board: &Board, winner: Cell) {
     };
     std::process::exit(0);
 }
-
