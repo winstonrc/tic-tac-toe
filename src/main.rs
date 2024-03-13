@@ -1,4 +1,10 @@
+use std::fmt;
 use std::io::{self, Write};
+use std::process;
+
+const BOARD_SIZE: usize = 3;
+
+type Board = [[Cell; BOARD_SIZE]; BOARD_SIZE];
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Cell {
@@ -7,8 +13,8 @@ enum Cell {
     O,
 }
 
-impl std::fmt::Display for Cell {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Cell {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Cell::Empty => write!(f, " "),
             Cell::X => write!(f, "X"),
@@ -16,10 +22,6 @@ impl std::fmt::Display for Cell {
         }
     }
 }
-
-const BOARD_SIZE: usize = 3;
-
-type Board = [[Cell; BOARD_SIZE]; BOARD_SIZE];
 
 fn main() {
     let mut board: Board = [[Cell::Empty; BOARD_SIZE]; BOARD_SIZE];
@@ -67,7 +69,7 @@ fn player_turn(board: &mut Board) {
         let buffer = buffer.trim().replace(char::is_whitespace, "").to_string();
 
         if buffer == "forfeit" || buffer == "quit" || buffer == "q" {
-            std::process::exit(0);
+            process::exit(0);
         }
 
         if buffer.len() != 2 {
@@ -288,5 +290,5 @@ fn end_game(board: &Board, winner: Cell) {
         Cell::X => println!("You win!"),
         Cell::O => println!("The computer wins. Better luck next time!"),
     };
-    std::process::exit(0);
+    process::exit(0);
 }
