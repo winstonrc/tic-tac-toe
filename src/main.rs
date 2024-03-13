@@ -130,16 +130,16 @@ fn computer_turn(board: &mut Board) {
 }
 
 fn select_best_move(board: &Board, player: &Cell) -> Option<(usize, usize)> {
-    let mut predictive_board = board.clone();
     let mut max_value = -100;
     let mut best_move: Option<(usize, usize)> = None;
 
     for row in 0..BOARD_SIZE {
         for col in 0..BOARD_SIZE {
-            if predictive_board[row][col] == Cell::Empty {
+            if board[row][col] == Cell::Empty {
+                let mut predictive_board = board.clone();
                 predictive_board[row][col] = *player;
-                let move_value = check_move_strength(&mut predictive_board, &player);
-                predictive_board[row][col] = Cell::Empty;
+
+                let move_value = check_move_strength(&predictive_board, &player);
 
                 if move_value > max_value {
                     max_value = move_value;
@@ -152,7 +152,7 @@ fn select_best_move(board: &Board, player: &Cell) -> Option<(usize, usize)> {
     best_move
 }
 
-fn check_move_strength(board: &mut Board, player: &Cell) -> i32 {
+fn check_move_strength(board: &Board, player: &Cell) -> i32 {
     let opponent: Cell = match *player {
         Cell::X => Cell::O,
         Cell::O => Cell::X,
@@ -171,9 +171,9 @@ fn check_move_strength(board: &mut Board, player: &Cell) -> i32 {
     for row in 0..BOARD_SIZE {
         for col in 0..BOARD_SIZE {
             if board[row][col] == Cell::Empty {
-                board[row][col] = opponent;
-                let move_value = -check_move_strength(board, &opponent) / 2;
-                board[row][col] = Cell::Empty;
+                let mut predictive_board = board.clone();
+                predictive_board[row][col] = opponent;
+                let move_value = -check_move_strength(&predictive_board, &opponent) / 2;
 
                 if move_value > max_value {
                     max_value = move_value;
