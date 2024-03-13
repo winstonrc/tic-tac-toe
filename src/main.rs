@@ -24,7 +24,7 @@ type Board = [[Cell; BOARD_SIZE]; BOARD_SIZE];
 fn main() {
     let mut board: Board = [[Cell::Empty; BOARD_SIZE]; BOARD_SIZE];
 
-    println!("You are x. The computer is o. Your turn first!");
+    println!("You are X. The computer is O. Your turn first!");
     println!("Enter 'forfeit' at any time to quit.");
 
     loop {
