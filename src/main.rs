@@ -153,7 +153,6 @@ fn select_best_move(board: &Board, player: &Cell) -> Option<(usize, usize)> {
             if board[row][col] == Cell::Empty {
                 let mut predictive_board = board.clone();
                 predictive_board[row][col] = *player;
-
                 let move_value = check_move_strength(&predictive_board, &player);
 
                 if move_value > max_value {
