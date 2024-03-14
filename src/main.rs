@@ -2,7 +2,7 @@ use std::fmt;
 use std::io::{self, Write};
 use std::process;
 
-const BOARD_SIZE: usize = 3;
+const BOARD_SIZE: usize = 4;
 
 type Board = [[Cell; BOARD_SIZE]; BOARD_SIZE];
 
@@ -100,7 +100,7 @@ fn player_turn(board: &mut Board) {
                 let col = (value % 10) - 1;
 
                 if row > BOARD_SIZE - 1 || col > BOARD_SIZE - 1 {
-                    eprintln!("Error: Values must be between 1-3 inclusive.");
+                    eprintln!("Error: Values must be between 1-{} inclusive.", BOARD_SIZE);
                     continue;
                 }
 
