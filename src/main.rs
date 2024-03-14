@@ -39,8 +39,17 @@ fn main() {
 }
 
 fn print_board(board: &Board) {
-    println!("    1   2   3");
-    println!("  +---+---+---+");
+    print!(" ");
+    for i in 0..BOARD_SIZE {
+        print!("   {}", i + 1);
+    }
+    println!();
+
+    print!("  +");
+    for _col in 0..BOARD_SIZE {
+        print!("---+");
+    }
+    println!();
 
     for row in 0..BOARD_SIZE {
         print!("{} | ", row + 1);
@@ -49,7 +58,13 @@ fn print_board(board: &Board) {
             let cell = board[row][col];
             print!("{} | ", cell);
         }
-        println!("\n  +---+---+---+");
+        println!();
+
+        print!("  +");
+        for _row in 0..BOARD_SIZE {
+            print!("---+");
+        }
+        println!();
     }
 }
 
@@ -84,7 +99,7 @@ fn player_turn(board: &mut Board) {
                 let row = (value / 10) - 1;
                 let col = (value % 10) - 1;
 
-                if row > 2 || col > 2 {
+                if row > BOARD_SIZE - 1 || col > BOARD_SIZE - 1 {
                     eprintln!("Error: Values must be between 1-3 inclusive.");
                     continue;
                 }
